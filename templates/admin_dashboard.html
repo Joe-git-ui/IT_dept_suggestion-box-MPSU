@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard - Anonymous Suggestion Box</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body class="admin-page">
+    <div class="container mt-4">
+        <h1>Admin Dashboard</h1>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{{ url_for('admin_logout') }}" class="btn btn-secondary">Logout</a>
+                <a href="{{ url_for('admin_settings') }}" class="btn btn-info ms-2">Settings</a>
+            </div>
+            <form class="d-flex" method="get" action="{{ url_for('admin_dashboard') }}">
+                <select name="sort_by" class="form-select me-2" onchange="this.form.submit()">
+                    <option value="date_desc" {% if request.args.get('sort_by') == 'date_desc' or not request.args.get('sort_by') %}selected{% endif %}>Date Descending</option>
+                    <option value="date_asc" {% if request.args.get('sort_by') == 'date_asc' %}selected{% endif %}>Date Ascending</option>
+                </select>
+                <select name="filter_reviewed" class="form-select me-2" onchange="this.form.submit()">
+                    <option value="all" {% if request.args.get('filter_reviewed') == 'all' or not request.args.get('filter_reviewed') %}selected{% endif %}>All</option>
+                    <option value="reviewed" {% if request.args.get('filter_reviewed') == 'reviewed' %}selected{% endif %}>Reviewed</option>
+                    <option value="unreviewed" {% if request.args.get('filter_reviewed') == 'unreviewed' %}selected{% endif %}>Unreviewed</option>
+                </select>
+                <select name="filter_profanity" class="form-select me-2" onchange="this.form.submit()">
+                    <option value="all" {% if request.args.get('filter_profanity') == 'all' or not request.args.get('filter_profanity') %}selected{% endif %}>All</option>
+                    <option value="flagged" {% if request.args.get('filter_profanity') == 'flagged' %}selected{% endif %}>Profanity Flagged</option>
+                    <option value="not_flagged" {% if request.args.get('filter_profanity') == 'not_flagged' %}selected{% endif %}>Not Flagged</option>
+                </select>
+            </form>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Suggestion</th>
+                        <th>Date Submitted</th>
+                        <th>Reviewed</th>
+                        <th>Profanity Flagged</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for suggestion in suggestions %}
+                    <tr>
+                        <td>{{ suggestion.content }}</td>
+                        <td>{{ suggestion.date_submitted.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            {% if suggestion.reviewed %}
+                                <span class="badge bg-success">Reviewed</span>
+                            {% else %}
+                                <form action="{{ url_for('mark_reviewed', suggestion_id=suggestion.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark Reviewed</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if suggestion.profanity_flagged %}
+                                <span class="badge bg-danger">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="{{ url_for('delete_suggestion', suggestion_id=suggestion.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete/archive this suggestion?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No suggestions found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
