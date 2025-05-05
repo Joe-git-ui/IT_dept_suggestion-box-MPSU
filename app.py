@@ -13,10 +13,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Models
+import uuid
+
 class Suggestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # Removed unique_id column to fix migration issue
-    # unique_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
+    unique_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(100), nullable=False)
@@ -83,7 +84,7 @@ def submit_suggestion():
             flash(f'Your suggestion was not submitted because it contains blocked words: {", ".join(blocked_words)}. Please revise and resubmit.', 'danger')
             return redirect(url_for('index'))
 
-    suggestion = Suggestion(title=title, content=content, category=category)
+    suggestion = Suggestion(unique_id=str(uuid.uuid4()), title=title, content=content, category=category)
     db.session.add(suggestion)
     db.session.commit()
     flash('Suggestion submitted successfully!', 'success')
