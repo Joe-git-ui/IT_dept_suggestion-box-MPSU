@@ -22,14 +22,46 @@
         {% endwith %}
         <form action="{{ url_for('submit_suggestion') }}" method="POST">
             <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" placeholder="Enter the subject of your suggestion" required />
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="" disabled selected>Select a category</option>
+                    <optgroup label="🎓 Student-Focused Categories">
+                        <option value="Software Issues">Software Issues – Problems with classroom or lab software.</option>
+                        <option value="Hardware Issues">Hardware Issues – Faulty computers, printers, or devices.</option>
+                        <option value="Network & Internet">Network & Internet – Wi-Fi, LAN, or connectivity problems.</option>
+                        <option value="Lab/Classroom Equipment">Lab/Classroom Equipment – Issues with lab tools or IT hardware.</option>
+                        <option value="System Access/Accounts">System Access/Accounts – Login problems, account issues, or password resets.</option>
+                        <option value="Website/Portal Feedback">Website/Portal Feedback – Suggestions or bugs on university portals.</option>
+                        <option value="IT Support Services">IT Support Services – Feedback on helpdesk support or ticket handling.</option>
+                        <option value="New Feature Requests">New Feature Requests – Proposals for new tools or services.</option>
+                        <option value="Security & Privacy">Security & Privacy – Concerns about data safety or digital privacy.</option>
+                        <option value="Other">Other – General suggestions not covered above.</option>
+                    </optgroup>
+                    <optgroup label="👨‍🏫 Faculty-Focused Categories">
+                        <option value="Classroom Technology Support">Classroom Technology Support – Smartboards, projectors, or teaching aids.</option>
+                        <option value="Learning Management System (LMS)">Learning Management System (LMS) – Issues with Moodle, Blackboard, etc.</option>
+                        <option value="Faculty Software Tools">Faculty Software Tools – Tools for research or teaching (e.g., SPSS, MATLAB).</option>
+                        <option value="Online Teaching Support">Online Teaching Support – Platforms like Zoom or Teams.</option>
+                        <option value="Email & Communication Tools">Email & Communication Tools – Problems with institutional communication tools.</option>
+                        <option value="Resource Access Requests">Resource Access Requests – Requests for special software, lab access, or licenses.</option>
+                        <option value="Data Management & Storage">Data Management & Storage – Cloud storage, backups, or data handling support.</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="mb-3">
                 <label for="suggestion" class="form-label">Your Suggestion or Issue</label>
-                <textarea class="form-control" id="suggestion" name="suggestion" rows="4" required></textarea>
+                <textarea class="form-control" id="suggestion" name="suggestion" rows="4" placeholder="Write your suggestion in detail here" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Submit Anonymously</button>
         </form>
         <hr />
         <p class="text-muted">Your suggestion will be sent anonymously to the IT department.</p>
     </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
