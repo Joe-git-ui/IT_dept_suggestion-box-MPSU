@@ -15,7 +15,8 @@ db = SQLAlchemy(app)
 # Models
 class Suggestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    unique_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
+    # Removed unique_id column to fix migration issue
+    # unique_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(100), nullable=False)
