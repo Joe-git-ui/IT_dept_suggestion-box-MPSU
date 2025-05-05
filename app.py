@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import datetime
+import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
@@ -14,7 +15,10 @@ db = SQLAlchemy(app)
 # Models
 class Suggestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    unique_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
+    title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(100), nullable=False)
     date_submitted = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     reviewed = db.Column(db.Boolean, default=False)
     archived = db.Column(db.Boolean, default=False)
@@ -46,13 +50,25 @@ def login_required(f):
 # Routes
 @app.route('/')
 def index():
+    print("Serving updated index.html")
     return render_template('index.html')
 
 @app.route('/submit', methods=['POST'])
 def submit_suggestion():
+    title = request.form.get('title')
     content = request.form.get('suggestion')
+    category = request.form.get('category')
+
+    if not title or title.strip() == '':
+        flash('Title cannot be empty.', 'danger')
+        return redirect(url_for('index'))
+
     if not content or content.strip() == '':
         flash('Suggestion cannot be empty.', 'danger')
+        return redirect(url_for('index'))
+
+    if not category or category.strip() == '':
+        flash('Please select a category.', 'danger')
         return redirect(url_for('index'))
 
     settings = Settings.query.first()
@@ -61,12 +77,12 @@ def submit_suggestion():
     profanity_words = [pw.word.lower() for pw in ProfanityWord.query.all()]
     content_lower = content.lower()
     if profanity_filter_enabled:
-        for word in profanity_words:
-            if word in content_lower:
-                flash('Profanity detected and blocked!', 'danger')
-                return redirect(url_for('index'))
+        blocked_words = [word for word in profanity_words if word in content_lower]
+        if blocked_words:
+            flash(f'Your suggestion was not submitted because it contains blocked words: {", ".join(blocked_words)}. Please revise and resubmit.', 'danger')
+            return redirect(url_for('index'))
 
-    suggestion = Suggestion(content=content)
+    suggestion = Suggestion(title=title, content=content, category=category)
     db.session.add(suggestion)
     db.session.commit()
     flash('Suggestion submitted successfully!', 'success')
@@ -114,12 +130,21 @@ def admin_logout():
     flash('Logged out successfully.', 'success')
     return redirect(url_for('admin_login'))
 
+from flask import send_file
+import io
+import csv
+from math import ceil
+
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
     sort_by = request.args.get('sort_by', 'date_desc')
     filter_reviewed = request.args.get('filter_reviewed', 'all')
     filter_profanity = request.args.get('filter_profanity', 'all')
+    filter_category = request.args.get('filter_category', 'all')
+    search_query = request.args.get('search', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 10
 
     suggestions_query = Suggestion.query.filter_by(archived=False)
 
@@ -133,17 +158,32 @@ def admin_dashboard():
     elif filter_profanity == 'not_flagged':
         suggestions_query = suggestions_query.filter_by(profanity_flagged=False)
 
+    if filter_category != 'all':
+        suggestions_query = suggestions_query.filter_by(category=filter_category)
+
+    if search_query:
+        search_pattern = f"%{search_query}%"
+        suggestions_query = suggestions_query.filter(
+            (Suggestion.title.ilike(search_pattern)) | (Suggestion.content.ilike(search_pattern))
+        )
+
     if sort_by == 'date_asc':
         suggestions_query = suggestions_query.order_by(Suggestion.date_submitted.asc())
     else:
         suggestions_query = suggestions_query.order_by(Suggestion.date_submitted.desc())
 
-    suggestions = suggestions_query.all()
+    total = suggestions_query.count()
+    suggestions = suggestions_query.offset((page - 1) * per_page).limit(per_page).all()
+    total_pages = ceil(total / per_page)
 
     settings = Settings.query.first()
     profanity_filter_enabled = settings.profanity_filter_enabled if settings else True
 
-    return render_template('admin_dashboard.html', suggestions=suggestions, profanity_filter_enabled=profanity_filter_enabled)
+    categories = [c[0] for c in db.session.query(Suggestion.category).distinct().all()]
+
+    return render_template('admin_dashboard.html', suggestions=suggestions, profanity_filter_enabled=profanity_filter_enabled,
+                           total_pages=total_pages, current_page=page, categories=categories,
+                           filter_category=filter_category, search_query=search_query)
 
 @app.route('/admin/mark_reviewed/<int:suggestion_id>', methods=['POST'])
 @login_required
@@ -154,6 +194,15 @@ def mark_reviewed(suggestion_id):
     flash('Suggestion marked as reviewed!', 'success')
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/unmark_reviewed/<int:suggestion_id>', methods=['POST'])
+@login_required
+def unmark_reviewed(suggestion_id):
+    suggestion = Suggestion.query.get_or_404(suggestion_id)
+    suggestion.reviewed = False
+    db.session.commit()
+    flash('Suggestion marked as unreviewed!', 'success')
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/admin/delete/<int:suggestion_id>', methods=['POST'])
 @login_required
 def delete_suggestion(suggestion_id):
@@ -162,6 +211,29 @@ def delete_suggestion(suggestion_id):
     db.session.commit()
     flash('Suggestion deleted/archived!', 'success')
     return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/permanent_delete/<int:suggestion_id>', methods=['POST'])
+@login_required
+def permanent_delete_suggestion(suggestion_id):
+    suggestion = Suggestion.query.get_or_404(suggestion_id)
+    db.session.delete(suggestion)
+    db.session.commit()
+    flash('Suggestion permanently deleted!', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/export_csv')
+@login_required
+def export_csv():
+    suggestions = Suggestion.query.filter_by(archived=False).all()
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['Unique ID', 'Title', 'Category', 'Content', 'Date Submitted', 'Reviewed', 'Profanity Flagged'])
+    for s in suggestions:
+        cw.writerow([s.unique_id, s.title, s.category, s.content, s.date_submitted.strftime('%Y-%m-%d %H:%M:%S'), s.reviewed, s.profanity_flagged])
+    output = io.BytesIO()
+    output.write(si.getvalue().encode('utf-8'))
+    output.seek(0)
+    return send_file(output, mimetype='text/csv', as_attachment=True, download_name='suggestions.csv')
 
 @app.route('/admin/settings', methods=['GET', 'POST'])
 @login_required
@@ -209,4 +281,4 @@ def remove_profanity_word(word_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    import os
+    app.run(debug=True)

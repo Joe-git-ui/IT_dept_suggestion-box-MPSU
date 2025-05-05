@@ -9,29 +9,56 @@
 </head>
 <body class="admin-page">
     <div class="container mt-4">
-        <h1>Admin Dashboard</h1>
-        <div class="mb-3 d-flex justify-content-between align-items-center">
-            <div>
-                <a href="{{ url_for('admin_logout') }}" class="btn btn-secondary">Logout</a>
-                <a href="{{ url_for('admin_settings') }}" class="btn btn-info ms-2">Settings</a>
-            </div>
-            <form class="d-flex" method="get" action="{{ url_for('admin_dashboard') }}">
-                <select name="sort_by" class="form-select me-2" onchange="this.form.submit()">
-                    <option value="date_desc" {% if request.args.get('sort_by') == 'date_desc' or not request.args.get('sort_by') %}selected{% endif %}>Date Descending</option>
-                    <option value="date_asc" {% if request.args.get('sort_by') == 'date_asc' %}selected{% endif %}>Date Ascending</option>
-                </select>
-                <select name="filter_reviewed" class="form-select me-2" onchange="this.form.submit()">
-                    <option value="all" {% if request.args.get('filter_reviewed') == 'all' or not request.args.get('filter_reviewed') %}selected{% endif %}>All</option>
-                    <option value="reviewed" {% if request.args.get('filter_reviewed') == 'reviewed' %}selected{% endif %}>Reviewed</option>
-                    <option value="unreviewed" {% if request.args.get('filter_reviewed') == 'unreviewed' %}selected{% endif %}>Unreviewed</option>
-                </select>
-                <select name="filter_profanity" class="form-select me-2" onchange="this.form.submit()">
-                    <option value="all" {% if request.args.get('filter_profanity') == 'all' or not request.args.get('filter_profanity') %}selected{% endif %}>All</option>
-                    <option value="flagged" {% if request.args.get('filter_profanity') == 'flagged' %}selected{% endif %}>Profanity Flagged</option>
-                    <option value="not_flagged" {% if request.args.get('filter_profanity') == 'not_flagged' %}selected{% endif %}>Not Flagged</option>
-                </select>
-            </form>
+    <h1>Admin Dashboard - ENHANCED</h1>
+    <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap">
+        <div class="mb-2">
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-secondary">Logout</a>
+            <a href="{{ url_for('admin_settings') }}" class="btn btn-info ms-2">Settings</a>
+            <a href="{{ url_for('export_csv') }}" class="btn btn-success ms-2">Export CSV</a>
         </div>
+        <form class="d-flex flex-wrap align-items-center" method="get" action="{{ url_for('admin_dashboard') }}">
+            <input type="text" name="search" class="form-control me-2 mb-2" placeholder="Search title or content" value="{{ search_query }}" />
+<select name="filter_category" class="form-select me-2 mb-2" onchange="this.form.submit()">
+    <option value="all" {% if filter_category == 'all' %}selected{% endif %}>All Categories</option>
+    <optgroup label="🎓 Student-Focused Categories">
+        <option value="Software Issues" {% if filter_category == 'Software Issues' %}selected{% endif %}>Software Issues</option>
+        <option value="Hardware Issues" {% if filter_category == 'Hardware Issues' %}selected{% endif %}>Hardware Issues</option>
+        <option value="Network & Internet" {% if filter_category == 'Network & Internet' %}selected{% endif %}>Network & Internet</option>
+        <option value="Lab/Classroom Equipment" {% if filter_category == 'Lab/Classroom Equipment' %}selected{% endif %}>Lab/Classroom Equipment</option>
+        <option value="System Access/Accounts" {% if filter_category == 'System Access/Accounts' %}selected{% endif %}>System Access/Accounts</option>
+        <option value="Website/Portal Feedback" {% if filter_category == 'Website/Portal Feedback' %}selected{% endif %}>Website/Portal Feedback</option>
+        <option value="IT Support Services" {% if filter_category == 'IT Support Services' %}selected{% endif %}>IT Support Services</option>
+        <option value="New Feature Requests" {% if filter_category == 'New Feature Requests' %}selected{% endif %}>New Feature Requests</option>
+        <option value="Security & Privacy" {% if filter_category == 'Security & Privacy' %}selected{% endif %}>Security & Privacy</option>
+        <option value="Other" {% if filter_category == 'Other' %}selected{% endif %}>Other</option>
+    </optgroup>
+    <optgroup label="👨‍🏫 Faculty-Focused Categories">
+        <option value="Classroom Technology Support" {% if filter_category == 'Classroom Technology Support' %}selected{% endif %}>Classroom Technology Support</option>
+        <option value="Learning Management System (LMS)" {% if filter_category == 'Learning Management System (LMS)' %}selected{% endif %}>Learning Management System (LMS)</option>
+        <option value="Faculty Software Tools" {% if filter_category == 'Faculty Software Tools' %}selected{% endif %}>Faculty Software Tools</option>
+        <option value="Online Teaching Support" {% if filter_category == 'Online Teaching Support' %}selected{% endif %}>Online Teaching Support</option>
+        <option value="Email & Communication Tools" {% if filter_category == 'Email & Communication Tools' %}selected{% endif %}>Email & Communication Tools</option>
+        <option value="Resource Access Requests" {% if filter_category == 'Resource Access Requests' %}selected{% endif %}>Resource Access Requests</option>
+        <option value="Data Management & Storage" {% if filter_category == 'Data Management & Storage' %}selected{% endif %}>Data Management & Storage</option>
+    </optgroup>
+</select>
+            <select name="sort_by" class="form-select me-2 mb-2" onchange="this.form.submit()">
+                <option value="date_desc" {% if request.args.get('sort_by') == 'date_desc' or not request.args.get('sort_by') %}selected{% endif %}>Date Descending</option>
+                <option value="date_asc" {% if request.args.get('sort_by') == 'date_asc' %}selected{% endif %}>Date Ascending</option>
+            </select>
+            <select name="filter_reviewed" class="form-select me-2 mb-2" onchange="this.form.submit()">
+                <option value="all" {% if request.args.get('filter_reviewed') == 'all' or not request.args.get('filter_reviewed') %}selected{% endif %}>All</option>
+                <option value="reviewed" {% if request.args.get('filter_reviewed') == 'reviewed' %}selected{% endif %}>Reviewed</option>
+                <option value="unreviewed" {% if request.args.get('filter_reviewed') == 'unreviewed' %}selected{% endif %}>Unreviewed</option>
+            </select>
+            <select name="filter_profanity" class="form-select me-2 mb-2" onchange="this.form.submit()">
+                <option value="all" {% if request.args.get('filter_profanity') == 'all' or not request.args.get('filter_profanity') %}selected{% endif %}>All</option>
+                <option value="flagged" {% if request.args.get('filter_profanity') == 'flagged' %}selected{% endif %}>Profanity Flagged</option>
+                <option value="not_flagged" {% if request.args.get('filter_profanity') == 'not_flagged' %}selected{% endif %}>Not Flagged</option>
+            </select>
+            <button type="submit" class="btn btn-primary mb-2">Apply</button>
+        </form>
+    </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
@@ -42,53 +69,94 @@
             {% endfor %}
           {% endif %}
         {% endwith %}
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Suggestion</th>
-                        <th>Date Submitted</th>
-                        <th>Reviewed</th>
-                        <th>Profanity Flagged</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for suggestion in suggestions %}
-                    <tr>
-                        <td>{{ suggestion.content }}</td>
-                        <td>{{ suggestion.date_submitted.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td>
-                            {% if suggestion.reviewed %}
-                                <span class="badge bg-success">Reviewed</span>
-                            {% else %}
-                                <form action="{{ url_for('mark_reviewed', suggestion_id=suggestion.id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark Reviewed</button>
-                                </form>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if suggestion.profanity_flagged %}
-                                <span class="badge bg-danger">Yes</span>
-                            {% else %}
-                                <span class="badge bg-secondary">No</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <form action="{{ url_for('delete_suggestion', suggestion_id=suggestion.id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete/archive this suggestion?');">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
+<div class="table-responsive">
+    <table class="table table-bordered align-middle" style="border-color: #dee2e6;">
+        <thead class="table-light text-center">
+            <tr>
+                <th style="font-weight: 700; font-size: 1.1rem;">Unique ID</th>
+                <th style="font-weight: 700; font-size: 1.1rem; text-align: left;">Title</th>
+                <th style="font-weight: 700; font-size: 1.1rem; text-align: left;">Category</th>
+                <th style="font-weight: 700; font-size: 1.1rem; text-align: left; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Suggestion">Suggestion</th>
+                <th style="font-weight: 700; font-size: 1.1rem;">Date Submitted</th>
+                <th style="font-weight: 700; font-size: 1.1rem;">Reviewed</th>
+                <th style="font-weight: 700; font-size: 1.1rem;">Profanity Flagged</th>
+                <th style="font-weight: 700; font-size: 1.1rem;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for suggestion in suggestions %}
+            <tr style="background-color: {% if loop.index0 % 2 == 0 %}#ffffff{% else %}#f8f9fa{% endif %};">
+                <td class="text-center">{{ suggestion.unique_id }}</td>
+                <td style="text-align: left;">{{ suggestion.title }}</td>
+                <td style="text-align: left;">{{ suggestion.category }}</td>
+                <td style="text-align: left; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ suggestion.content }}">{{ suggestion.content }}</td>
+                <td class="text-center">{{ suggestion.date_submitted.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td class="text-center">
+                    <div class="form-check form-switch d-flex justify-content-center">
+                        <form action="{{ url_for('mark_reviewed', suggestion_id=suggestion.id) }}" method="POST" id="reviewed-form-{{ suggestion.id }}">
+                            <input class="form-check-input" type="checkbox" id="reviewedSwitch{{ suggestion.id }}" name="reviewed" onchange="document.getElementById('reviewed-form-{{ suggestion.id }}').submit();" {% if suggestion.reviewed %}checked{% endif %} />
+                        </form>
+                    </div>
+                </td>
+                <td class="text-center">
+                    {% if suggestion.profanity_flagged %}
+                        <span class="badge rounded-pill bg-danger">Yes</span>
                     {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center">No suggestions found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                        <span class="badge rounded-pill bg-secondary">No</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form action="{{ url_for('delete_suggestion', suggestion_id=suggestion.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete/archive this suggestion?');">
+                                    <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{{ url_for('permanent_delete_suggestion', suggestion_id=suggestion.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this suggestion? This action cannot be undone.');">
+                                    <button type="submit" class="dropdown-item text-danger">Permanent Delete</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">No suggestions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <nav aria-label="Page navigation" class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin_dashboard', page=current_page-1, sort_by=request.args.get('sort_by'), filter_reviewed=request.args.get('filter_reviewed'), filter_profanity=request.args.get('filter_profanity'), filter_category=filter_category, search=search_query) }}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+            <li class="page-item {% if p == current_page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('admin_dashboard', page=p, sort_by=request.args.get('sort_by'), filter_reviewed=request.args.get('filter_reviewed'), filter_profanity=request.args.get('filter_profanity'), filter_category=filter_category, search=search_query) }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+            {% if current_page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin_dashboard', page=current_page+1, sort_by=request.args.get('sort_by'), filter_reviewed=request.args.get('filter_reviewed'), filter_profanity=request.args.get('filter_profanity'), filter_category=filter_category, search=search_query) }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
 </body>
 </html>

@@ -1,18 +1,28 @@
 body {
-    background-color: #f8f9fa;
+    background-color: #add8e6; /* Light Blue background for user page */
     font-family: Arial, sans-serif;
-}
-
-body.admin-page {
-    background-color: #e0f7fa; /* Light cyan background for admin pages */
-}
-
-h1, h2, h3 {
-    color: #343a40;
+    color: #333;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
     max-width: 900px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+    margin-top: 40px;
+    transition: background-color 0.3s ease;
+}
+
+.container:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+h1, h2, h3 {
+    color: #343a40;
 }
 
 textarea.form-control {
