@@ -90,7 +90,7 @@ def submit_suggestion():
     flash('Suggestion submitted successfully!', 'success')
     return redirect(url_for('index'))
 
-@app.route('/admin/register', methods=['GET', 'POST'])
+@app.route('/ITDEPT_suggestion/register', methods=['GET', 'POST'])
 def admin_register():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -110,7 +110,7 @@ def admin_register():
         return redirect(url_for('admin_login'))
     return render_template('admin_register.html')
 
-@app.route('/admin/login', methods=['GET', 'POST'])
+@app.route('/ITDEPT_suggestion/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -125,7 +125,7 @@ def admin_login():
             return redirect(url_for('admin_login'))
     return render_template('admin_login.html')
 
-@app.route('/admin/logout')
+@app.route('/ITDEPT_suggestion/logout')
 @login_required
 def admin_logout():
     session.pop('admin_id', None)
@@ -137,7 +137,7 @@ import io
 import csv
 from math import ceil
 
-@app.route('/admin/dashboard')
+@app.route('/ITDEPT_suggestion/dashboard')
 @login_required
 def admin_dashboard():
     sort_by = request.args.get('sort_by', 'date_desc')
@@ -187,7 +187,7 @@ def admin_dashboard():
                            total_pages=total_pages, current_page=page, categories=categories,
                            filter_category=filter_category, search_query=search_query)
 
-@app.route('/admin/mark_reviewed/<int:suggestion_id>', methods=['POST'])
+@app.route('/ITDEPT_suggestion/mark_reviewed/<int:suggestion_id>', methods=['POST'])
 @login_required
 def mark_reviewed(suggestion_id):
     suggestion = Suggestion.query.get_or_404(suggestion_id)
@@ -196,7 +196,7 @@ def mark_reviewed(suggestion_id):
     flash('Suggestion marked as reviewed!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/unmark_reviewed/<int:suggestion_id>', methods=['POST'])
+@app.route('/ITDEPT_suggestion/unmark_reviewed/<int:suggestion_id>', methods=['POST'])
 @login_required
 def unmark_reviewed(suggestion_id):
     suggestion = Suggestion.query.get_or_404(suggestion_id)
@@ -205,7 +205,7 @@ def unmark_reviewed(suggestion_id):
     flash('Suggestion marked as unreviewed!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/delete/<int:suggestion_id>', methods=['POST'])
+@app.route('/ITDEPT_suggestion/delete/<int:suggestion_id>', methods=['POST'])
 @login_required
 def delete_suggestion(suggestion_id):
     suggestion = Suggestion.query.get_or_404(suggestion_id)
@@ -214,7 +214,7 @@ def delete_suggestion(suggestion_id):
     flash('Suggestion deleted/archived!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/permanent_delete/<int:suggestion_id>', methods=['POST'])
+@app.route('/ITDEPT_suggestion/permanent_delete/<int:suggestion_id>', methods=['POST'])
 @login_required
 def permanent_delete_suggestion(suggestion_id):
     suggestion = Suggestion.query.get_or_404(suggestion_id)
@@ -223,7 +223,7 @@ def permanent_delete_suggestion(suggestion_id):
     flash('Suggestion permanently deleted!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/export_csv')
+@app.route('/ITDEPT_suggestion/export_csv')
 @login_required
 def export_csv():
     suggestions = Suggestion.query.filter_by(archived=False).all()
@@ -237,7 +237,7 @@ def export_csv():
     output.seek(0)
     return send_file(output, mimetype='text/csv', as_attachment=True, download_name='suggestions.csv')
 
-@app.route('/admin/settings', methods=['GET', 'POST'])
+@app.route('/ITDEPT_suggestion/settings', methods=['GET', 'POST'])
 @login_required
 def admin_settings():
     settings = Settings.query.first()
@@ -256,7 +256,7 @@ def admin_settings():
     profanity_words = ProfanityWord.query.order_by(ProfanityWord.word.asc()).all()
     return render_template('admin_settings.html', settings=settings, profanity_words=profanity_words)
 
-@app.route('/admin/profanity/add', methods=['POST'])
+@app.route('/ITDEPT_suggestion/profanity/add', methods=['POST'])
 @login_required
 def add_profanity_word():
     word = request.form.get('word')
@@ -271,7 +271,7 @@ def add_profanity_word():
             flash(f'Word "{word}" already exists in profanity list.', 'warning')
     return redirect(url_for('admin_settings'))
 
-@app.route('/admin/profanity/remove/<int:word_id>', methods=['POST'])
+@app.route('/ITDEPT_suggestion/profanity/remove/<int:word_id>', methods=['POST'])
 @login_required
 def remove_profanity_word(word_id):
     word = ProfanityWord.query.get_or_404(word_id)
