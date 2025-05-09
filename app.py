@@ -81,7 +81,7 @@ def submit_suggestion():
     if profanity_filter_enabled:
         blocked_words = [word for word in profanity_words if word in content_lower]
         if blocked_words:
-            flash(f'Your suggestion was not submitted because it contains blocked words: {", ".join(blocked_words)}. Please revise and resubmit.', 'danger')
+            flash(f'Your issue was not submitted because it contains blocked words: {", ".join(blocked_words)}. Please revise and resubmit.', 'danger')
             return redirect(url_for('index'))
 
     suggestion = Suggestion(unique_id=str(uuid.uuid4()), title=title, content=content, category=category)
